@@ -1,0 +1,66 @@
+name: Daily Lead Machine
+
+# 23:00 UTC = 7:00 AM in your timezone (change the hour below)
+on:
+  schedule:
+    - cron: "0 23 * * *"
+  workflow_dispatch: {}   # lets you run it manually from the Actions tab
+
+permissions:
+  contents: write      # to commit the rolling store back
+  pages: write         # to publish the dashboard
+  id-token: write
+
+concurrency:
+  group: lead-machine
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Scrape + build dashboard
+        env:
+          APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+          WINDOW_DAYS: "7"
+          # Optional: set this repo secret to auto-draft applications for Hot leads.
+          # Unset = feature off (no cost). DRAFT_MODEL/MAX_DRAFTS tune model + daily cap.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DRAFT_MODEL: "claude-haiku-4-5"
+          MAX_DRAFTS: "60"
+          # Optional My Leads cross-device sync: set repo Variables (not secrets) SYNC_URL and
+          # SYNC_TOKEN to your Cloudflare Worker. Unset = local-only (this browser).
+          SYNC_URL: ${{ vars.SYNC_URL }}
+          SYNC_TOKEN: ${{ vars.SYNC_TOKEN }}
+          # Optional Agency-tab decision-maker enrichment via Prospeo. Set secret PROSPEO_API_KEY
+          # to turn it on. PROSPEO_MOBILE=0 skips the 10-credit phone lookup; MAX_ENRICH caps the
+          # leads searched per run so credit spend stays bounded. Unset key = feature off (no cost).
+          PROSPEO_API_KEY: ${{ secrets.PROSPEO_API_KEY }}
+          PROSPEO_MOBILE: "1"
+          MAX_ENRICH: "25"
+        run: python scrape_and_build.py
+
+      - name: Persist rolling store
+        run: |
+          git config user.name  "lead-machine-bot"
+          git config user.email "actions@github.com"
+          git add store.json olj_leads.json fb_leads.json upwork_leads.json linkedin_leads.json
+          git commit -m "chore: update rolling stores ($(date -u +%Y-%m-%d))" || echo "no store changes"
+          git push || echo "nothing to push"
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
