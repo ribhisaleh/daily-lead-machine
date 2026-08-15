@@ -1,0 +1,277 @@
+<style>
+  :root{
+    --ground:#EEF0EE; --surface:#FFFFFF; --surface-2:#F5F7F6;
+    --ink:#161B20; --muted:#5F6971; --hairline:#E0E3E1;
+    --teal:#0C8B86; --teal-soft:#0c8b8618;
+    --hot:#0C8B86; --hot-soft:#0c8b8614; --solid:#3A6EA5; --solid-soft:#3a6ea512; --cool:#8A939B;
+    --urgent:#C0392B; --high:#C87A0A; --normal:#4E7CB0; --low:#8A939B;
+    --shadow:0 1px 2px rgba(20,27,32,.06),0 8px 24px rgba(20,27,32,.05);
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#0E141B; --surface:#17202B; --surface-2:#1E2833;
+      --ink:#E7ECEF; --muted:#94A1AD; --hairline:#2A353F;
+      --teal:#34C6BE; --teal-soft:#34c6be1f;
+      --hot:#34C6BE; --hot-soft:#34c6be1a; --solid:#6BA3D8; --solid-soft:#6ba3d81a; --cool:#6C7883;
+      --urgent:#E5705F; --high:#E7AE3A; --normal:#6BA3D8; --low:#6C7883;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.28);
+    }
+  }
+  :root[data-theme="light"]{
+    --ground:#EEF0EE;--surface:#FFFFFF;--surface-2:#F5F7F6;--ink:#161B20;--muted:#5F6971;--hairline:#E0E3E1;
+    --teal:#0C8B86;--teal-soft:#0c8b8618;--hot:#0C8B86;--hot-soft:#0c8b8614;--solid:#3A6EA5;--solid-soft:#3a6ea512;--cool:#8A939B;
+    --urgent:#C0392B;--high:#C87A0A;--normal:#4E7CB0;--low:#8A939B;--shadow:0 1px 2px rgba(20,27,32,.06),0 8px 24px rgba(20,27,32,.05);
+  }
+  :root[data-theme="dark"]{
+    --ground:#0E141B;--surface:#17202B;--surface-2:#1E2833;--ink:#E7ECEF;--muted:#94A1AD;--hairline:#2A353F;
+    --teal:#34C6BE;--teal-soft:#34c6be1f;--hot:#34C6BE;--hot-soft:#34c6be1a;--solid:#6BA3D8;--solid-soft:#6ba3d81a;--cool:#6C7883;
+    --urgent:#E5705F;--high:#E7AE3A;--normal:#6BA3D8;--low:#6C7883;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.28);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:clamp(18px,4vw,40px) clamp(14px,3vw,30px) 70px}
+  a{color:var(--teal);text-decoration:none}a:hover{text-decoration:underline}
+  :focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:4px}
+
+  .topnav{display:flex;gap:6px;margin-bottom:18px}
+  .topnav a{font-family:var(--mono);font-size:12.5px;padding:9px 15px;border-radius:999px;border:1px solid var(--hairline);color:var(--muted);background:var(--surface);text-decoration:none}
+  .topnav a.on{background:var(--teal-soft);color:var(--teal);border-color:transparent;font-weight:600}
+  .topnav a:hover{color:var(--ink);text-decoration:none}
+  .mast{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;border-bottom:1px solid var(--hairline);padding-bottom:20px;margin-bottom:24px}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);margin:0 0 9px}
+  h1{font-size:clamp(23px,4vw,34px);margin:0;font-weight:660;letter-spacing:-.02em}
+  .sub{color:var(--muted);margin:9px 0 0;font-size:14px;max-width:60ch}
+  .runmeta{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:11px;display:flex;flex-wrap:wrap;gap:5px 16px}
+  .runmeta b{color:var(--ink);font-weight:600}
+  .themebtn{flex:none;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;background:var(--surface);color:var(--muted);border:1px solid var(--hairline);border-radius:999px;padding:8px 14px;cursor:pointer}
+  .themebtn:hover{color:var(--ink);border-color:var(--teal)}
+
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:24px}
+  .tile{background:var(--surface);border:1px solid var(--hairline);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .tile .lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .tile .num{font-family:var(--mono);font-size:clamp(26px,4.4vw,36px);font-weight:600;line-height:1;margin-top:10px;font-variant-numeric:tabular-nums}
+  .tile .foot{font-size:12px;color:var(--muted);margin-top:7px}
+  .tile.hot .num{color:var(--hot)}.tile.hot::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--hot)}
+  .tile.solid .num{color:var(--solid)}
+
+  .controls{display:flex;flex-wrap:wrap;gap:9px 11px;align-items:center;margin-bottom:14px;position:sticky;top:0;z-index:5;background:var(--ground);padding:10px 0}
+  .pillset{display:inline-flex;background:var(--surface);border:1px solid var(--hairline);border-radius:999px;padding:3px}
+  .pill{font-family:var(--mono);font-size:12px;border:0;background:transparent;color:var(--muted);padding:7px 13px;border-radius:999px;cursor:pointer;white-space:nowrap}
+  .pill[aria-pressed="true"]{background:var(--teal-soft);color:var(--teal);font-weight:600}
+  .pill .c{opacity:.7;margin-left:5px}
+  .ctl{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--surface);border:1px solid var(--hairline);border-radius:9px;padding:9px 12px}
+  input.ctl{min-width:180px;flex:1 1 200px}select.ctl{cursor:pointer}
+  .resultcount{font-family:var(--mono);font-size:12px;color:var(--muted);margin:0 0 10px}
+
+  .tablewrap{background:var(--surface);border:1px solid var(--hairline);border-radius:14px;box-shadow:var(--shadow);overflow-x:auto}
+  table{border-collapse:collapse;width:100%;min-width:860px}
+  thead th{position:sticky;top:0;background:var(--surface-2);text-align:left;font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:12px 14px;border-bottom:1px solid var(--hairline);white-space:nowrap}
+  thead th.sortable{cursor:pointer;user-select:none}thead th.sortable:hover{color:var(--ink)}
+  thead th .ar{opacity:.5;font-size:10px}
+  tbody td{padding:13px 14px;border-bottom:1px solid var(--hairline);vertical-align:top;font-size:13.5px}
+  tbody tr.lead{cursor:pointer;transition:background .12s}
+  tbody tr.lead:hover{background:var(--surface-2)}
+  tbody tr.lead.open{background:var(--surface-2)}
+
+  .score{display:inline-flex;align-items:baseline;gap:2px;font-family:var(--mono);font-weight:700;font-size:16px;font-variant-numeric:tabular-nums}
+  .score .m{font-size:10px;font-weight:500;color:var(--muted)}
+  .score.t-hot{color:var(--hot)}.score.t-solid{color:var(--ink)}.score.t-cool{color:var(--cool)}
+  .prio{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.04em;font-weight:600;padding:3px 7px;border-radius:5px;display:inline-block;margin-top:5px}
+  .prio.urgent{color:var(--urgent);background:color-mix(in srgb,var(--urgent) 12%,transparent)}
+  .prio.high{color:var(--high);background:color-mix(in srgb,var(--high) 14%,transparent)}
+  .prio.normal{color:var(--normal);background:color-mix(in srgb,var(--normal) 14%,transparent)}
+  .prio.low{color:var(--low);border:1px solid var(--hairline)}
+  td.c-role{min-width:240px}
+  .role-title{font-weight:600;color:var(--ink);font-size:14px;line-height:1.3}
+  .role-co{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:4px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .cotype{font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);background:var(--surface-2);border:1px solid var(--hairline);border-radius:4px;padding:1px 6px}
+  td.c-sal{font-family:var(--mono);font-size:12.5px;white-space:nowrap;color:var(--ink)}
+  td.c-date{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
+  .svc{display:flex;flex-wrap:wrap;gap:4px;max-width:210px}
+  .svctag{font-family:var(--mono);font-size:10px;color:var(--teal);background:var(--teal-soft);border-radius:5px;padding:2px 6px;white-space:nowrap}
+  .src{font-family:var(--mono);font-size:10px;letter-spacing:.03em;color:var(--muted);border:1px solid var(--hairline);border-radius:5px;padding:2px 7px;white-space:nowrap}
+  td.c-apply a{font-family:var(--mono);font-size:12px;white-space:nowrap}
+  .caret{font-family:var(--mono);color:var(--muted);font-size:11px;transition:transform .15s;display:inline-block}
+  .newb{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.06em;color:var(--teal);background:var(--teal-soft);border-radius:4px;padding:1px 5px;margin-left:5px;vertical-align:1px}
+  tr.lead.open .caret{transform:rotate(90deg);color:var(--teal)}
+
+  tr.detail td{padding:0;border-bottom:1px solid var(--hairline);background:var(--surface-2)}
+  .detail-inner{padding:2px 18px 18px 18px;display:none}
+  tr.detail.show .detail-inner{display:block}
+  .detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:12px}
+  .dk{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .dv{font-size:13px;color:var(--ink);margin-top:3px}
+  .why{background:var(--surface);border:1px solid var(--hairline);border-left:2px solid var(--teal);border-radius:8px;padding:12px 14px;font-size:13.5px;color:var(--ink)}
+  .why .wl{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:6px}
+  .why.empty{border-left-color:var(--hairline);color:var(--muted)}
+  .detail-actions{margin-top:12px}
+  .applybtn{display:inline-block;font-family:var(--mono);font-size:12.5px;font-weight:600;background:var(--teal);color:#fff;padding:9px 16px;border-radius:8px;text-decoration:none}
+  .applybtn:hover{filter:brightness(1.06);text-decoration:none}
+
+  .empty{padding:40px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:13px;display:none}
+  footer{margin-top:30px;border-top:1px solid var(--hairline);padding-top:20px;color:var(--muted);font-size:13px}
+  footer b{color:var(--ink)}
+  @media (max-width:820px){.tiles{grid-template-columns:repeat(2,1fr)}.mast{flex-direction:column}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <nav class="topnav">
+    <a href="index.html">🏠 All Leads</a>
+    <a href="onlinejobs.html">🎯 OnlineJobs Leads</a>
+    <a href="upwork.html">💼 Upwork Leads</a>
+    <a href="linkedin.html">🔗 LinkedIn Leads</a>
+    <a href="facebook.html">📘 Facebook Leads</a>
+    <a href="signal.html">📡 X Signal</a>
+    <a href="agency.html">🤝 Agency</a>
+    <a href="my_leads.html" class="on">⭐ My Leads</a>
+  </nav>
+  <header class="mast">
+    <div>
+      <p class="eyebrow">your business · Client Acquisition</p>
+      <h1>My Leads</h1>
+      <p class="sub">Everyone you're tracking, in one place. Set a lead's status on any board and it lands here, and it stays even after it drops off tomorrow's fresh board.</p>
+      <div class="runmeta">
+        <span>Tracked: <b id="m-total">0</b></span>
+        <span id="syncnote" style="color:var(--high)">Saved in this browser only. Applied leads auto-clear 30 days after your last activity (Won stays). Export a backup regularly.</span>
+      </div>
+    </div>
+    <button class="themebtn" id="themebtn" type="button">Theme</button>
+  </header>
+
+  <div class="controls">
+    <div class="pillset" id="statusPills" role="group" aria-label="Filter by status">
+      <button class="pill" data-st="all" aria-pressed="true">All <span class="c" id="c-all">0</span></button>
+      <button class="pill" data-st="To reach" aria-pressed="false">To reach <span class="c" id="c-to-reach">0</span></button>
+      <button class="pill" data-st="Applied" aria-pressed="false">Applied <span class="c" id="c-applied">0</span></button>
+      <button class="pill" data-st="Replied" aria-pressed="false">Replied <span class="c" id="c-replied">0</span></button>
+      <button class="pill" data-st="Call booked" aria-pressed="false">Call booked <span class="c" id="c-call-booked">0</span></button>
+      <button class="pill" data-st="Won" aria-pressed="false">Won <span class="c" id="c-won">0</span></button>
+      <button class="pill" data-st="Skip" aria-pressed="false">Skip <span class="c" id="c-skip">0</span></button>
+    </div>
+    <input class="ctl" id="search" type="search" placeholder="Search role, company, source…" aria-label="Search tracked leads">
+    <button class="ctl" id="exportBtn" type="button" style="cursor:pointer;font-weight:600;color:var(--teal)">⬇ Export backup</button>
+  </div>
+
+  <p class="resultcount" id="resultCount"></p>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Status</th><th>Role / Company</th><th>Source</th><th>Pay</th><th>Added</th><th>Notes</th><th>Open</th><th></th></tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <div class="empty" id="emptyMsg">No tracked leads yet. Open a lead on any board and set its <b>Track</b> status.</div>
+
+  <footer>
+    <b>How My Leads works.</b> Every status you set on a board is saved here in your browser, along with the full lead, so nothing is lost when the boards refresh each morning. Applied leads auto-clear 30 days after your last activity (change a status or edit a note and the clock resets); <b>Won</b> leads are kept for good. This list lives on this device only, so hit <b>Export backup</b> regularly and keep the file somewhere private (it has real people's details).
+  </footer>
+</div>
+
+<script>
+  __EXPORT_JS__
+  __TRACK_JS__
+  const $=s=>document.querySelector(s);
+  const esc=s=>(s==null?"":String(s)).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const slug=s=>String(s).toLowerCase().replace(/ /g,"-");
+  const STATUSES=(window.Track?Track.STATUSES:["To reach","Applied","Replied","Call booked","Won","Skip"]);
+  let state={st:"all",q:""};
+
+  const rows=()=>Object.values(window.Track?Track.all():{});
+
+  function render(){
+    const all=rows();
+    $("#m-total").textContent=all.length;
+    const c={}; all.forEach(l=>{c[l.status]=(c[l.status]||0)+1;});
+    $("#c-all").textContent=all.length;
+    STATUSES.forEach(s=>{const el=document.getElementById("c-"+slug(s)); if(el) el.textContent=c[s]||0;});
+    let r=all.filter(l=>{
+      if(state.st!=="all" && (l.status||"")!==state.st) return false;
+      if(state.q){const h=((l.jobTitle||"")+" "+(l.company||"")+" "+(l.source||"")+" "+(l.myNotes||"")+" "+(l.salary||"")).toLowerCase(); if(!h.includes(state.q)) return false;}
+      return true;
+    });
+    const order={}; STATUSES.forEach((s,i)=>order[s]=i);
+    r.sort((a,b)=>((order[a.status]??9)-(order[b.status]??9)) || ((b.updatedAt||"")<(a.updatedAt||"")?-1:1));
+    $("#resultCount").textContent=`${r.length} of ${all.length} tracked`;
+    const tb=$("#rows");
+    if(!r.length){tb.innerHTML="";$("#emptyMsg").style.display="block";return;}
+    $("#emptyMsg").style.display="none";
+    tb.innerHTML=r.map(l=>{
+      const opts=STATUSES.map(s=>`<option value="${s}"${s===l.status?" selected":""}>${s}</option>`).join("");
+      const dot=`<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${Track.color(l.status)};margin-right:7px;vertical-align:1px"></span>`;
+      const upd=(l.updatedAt&&l.updatedAt!==l.addedAt)?`<br><span style="opacity:.6">upd ${esc(l.updatedAt)}</span>`:"";
+      const ei=(window.Track?Track.expiresIn(l):null);
+      const exp=(ei===null)?`<br><span style="opacity:.55">kept</span>`:`<br><span style="opacity:.55;color:${ei<=5?"var(--high)":"inherit"}">clears in ${Math.max(ei,0)}d</span>`;
+      return `<tr>
+        <td>${dot}<select class="rowstatus" data-link="${esc(l.link)}" style="font-family:var(--mono);font-size:12px;padding:6px 8px;border-radius:8px;border:1px solid var(--hairline);background:var(--surface);color:var(--ink);cursor:pointer">${opts}</select></td>
+        <td class="c-role"><div class="role-title">${esc(l.jobTitle||"—")}</div><div class="role-co">${esc(l.company||"—")}${l.companyType?`<span class="cotype">${esc(l.companyType)}</span>`:""}</div></td>
+        <td><span class="src">${esc(l.source||"—")}</span></td>
+        <td class="c-sal">${esc(l.salary||"—")}</td>
+        <td class="c-date">${esc(l.addedAt||"—")}${upd}${exp}</td>
+        <td><input class="notein" data-link="${esc(l.link)}" value="${esc(l.myNotes||"")}" placeholder="notes…" style="font-family:var(--sans);font-size:12.5px;width:170px;padding:7px 9px;border-radius:8px;border:1px solid var(--hairline);background:var(--surface);color:var(--ink)"></td>
+        <td class="c-apply"><a href="${esc(l.link)}" target="_blank" rel="noopener">Open ↗</a>${l.draft?`<br><button class="appbtn" data-link="${esc(l.link)}" title="Show the drafted application" style="margin-top:6px;font-family:var(--mono);font-size:11px;color:var(--teal);background:var(--teal-soft);border:1px solid transparent;border-radius:7px;padding:5px 8px;cursor:pointer;white-space:nowrap">📄 Application</button>`:""}<br><button class="propbtn" data-link="${esc(l.link)}" title="Copy a proposal prompt to run your AI assistant" style="margin-top:6px;font-family:var(--mono);font-size:11px;color:var(--teal);background:var(--teal-soft);border:1px solid transparent;border-radius:7px;padding:5px 8px;cursor:pointer;white-space:nowrap">📋 Proposal</button></td>
+        <td><button class="rmbtn" data-link="${esc(l.link)}" title="Remove from My Leads" style="font-family:var(--mono);font-size:13px;color:var(--muted);background:transparent;border:1px solid var(--hairline);border-radius:7px;padding:5px 9px;cursor:pointer">✕</button></td>
+      </tr>${l.draft?`<tr class="appdetail" data-link="${esc(l.link)}" style="display:none"><td colspan="8" style="padding:0;border-bottom:1px solid var(--hairline)">${draftBox(l)}</td></tr>`:""}`;
+    }).join("");
+  }
+
+  $("#statusPills").addEventListener("click",e=>{const b=e.target.closest(".pill"); if(!b)return; state.st=b.dataset.st; [...$("#statusPills").children].forEach(x=>x.setAttribute("aria-pressed",x===b)); render();});
+  $("#search").addEventListener("input",e=>{state.q=e.target.value.trim().toLowerCase(); render();});
+  $("#rows").addEventListener("change",e=>{
+    const sel=e.target.closest(".rowstatus"); if(sel){const rec=Track.get(sel.dataset.link); if(rec){Track.set(rec,sel.value);} render(); return;}
+    const ni=e.target.closest(".notein"); if(ni){Track.setNotes(ni.dataset.link, ni.value);}
+  });
+  function fallbackCopy(t){try{const ta=document.createElement("textarea");ta.value=t;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();}catch(e){}}
+  function copyText(t){if(navigator.clipboard&&navigator.clipboard.writeText){return navigator.clipboard.writeText(t).catch(()=>fallbackCopy(t));}return fallbackCopy(t);}
+  function buildProposalPrompt(l){
+    return [
+      "Use the your AI assistant skill to turn my discovery call into a scoped, priced your business proposal for this prospect.","",
+      "Prospect (from my pipeline):",
+      "Their need / role posted: "+(l.jobTitle||""),
+      "Company: "+(l.company||"")+(l.companyType?(" ("+l.companyType+")"):""),
+      "Source: "+(l.source||"")+"  |  Link: "+(l.link||""),
+      "What I know so far: "+(l.myNotes||l.notes||"(add from the call)"),"",
+      "Next I'll paste my discovery-call transcript or notes. Read .agents/your notes.md first: use the offers, pricing bands, engagement terms and ICP preconditions, and obey the claims policy (the Proof table is empty, so state no result numbers, only the 5-year longest-client fact). Diagnose their real problem, scope the right your business offer(s), price within the bands, flag any missing preconditions, and give me a proposal draft to review. No em dashes. Draft only, do not send."
+    ].join("\n");
+  }
+  function draftBox(l){
+    if(!l.draft||!l.draft.body) return "";
+    const d=l.draft;
+    return `<div style="border-left:3px solid var(--teal);padding:12px 14px">`
+      +`<div style="font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:8px">✍️ Application${d.fit?` · <span style="color:var(--muted);text-transform:none;letter-spacing:0">${esc(d.fit)}</span>`:""}</div>`
+      +(d.subject?`<div style="font-weight:600;margin-bottom:6px">Subject: ${esc(d.subject)}</div>`:"")
+      +`<div style="font-size:13.5px;white-space:pre-wrap">${esc(d.body)}</div>`
+      +`<button class="copydraft" data-link="${esc(l.link)}" type="button" style="margin-top:10px;font-family:var(--mono);font-size:12px;font-weight:600;color:#fff;background:var(--teal);border:0;border-radius:8px;padding:8px 14px;cursor:pointer">Copy application</button></div>`;
+  }
+  $("#rows").addEventListener("click",e=>{
+    const rm=e.target.closest(".rmbtn"); if(rm){Track.remove(rm.dataset.link); render(); return;}
+    const ab=e.target.closest(".appbtn");
+    if(ab){const row=document.querySelector('.appdetail[data-link="'+CSS.escape(ab.dataset.link)+'"]'); if(row){row.style.display=row.style.display==="none"?"":"none";} return;}
+    const cd=e.target.closest(".copydraft");
+    if(cd){const rec=Track.get(cd.dataset.link); if(rec&&rec.draft){const t=(rec.draft.subject?("Subject: "+rec.draft.subject+"\n\n"):"")+rec.draft.body; copyText(t); const o=cd.textContent; cd.textContent="✓ Copied"; setTimeout(()=>{cd.textContent=o;},2000);} return;}
+    const pb=e.target.closest(".propbtn");
+    if(pb){const rec=Track.get(pb.dataset.link); if(rec){copyText(buildProposalPrompt(rec)); const o=pb.textContent; pb.textContent="✓ Copied. Paste into Claude Code"; setTimeout(()=>{pb.textContent=o;},2200);} return;}
+  });
+  $("#exportBtn").addEventListener("click",()=>{
+    const r=rows();
+    const data=r.map(l=>[l.status||"",Number(l.score)||0,l.jobTitle||"",l.company||"",l.email||"",l.companyType||"",l.source||"",l.salary||"",l.country||"",l.addedAt||"",l.updatedAt||"",l.link||"",l.myNotes||"",l.why||""]);
+    const stamp=new Date().toISOString().slice(0,10);
+    exportRowsToXlsx("my-leads-"+stamp+".xlsx",["Status","Score","Role / Title","Company","Email","Company type","Source","Pay","Country","Added","Updated","Link","My notes","Why it fits"],data);
+  });
+
+  const root=document.documentElement,mq=matchMedia("(prefers-color-scheme:dark)");
+  const setT=t=>{root.setAttribute("data-theme",t);$("#themebtn").textContent=t==="dark"?"◐ Light":"◑ Dark";};
+  setT(mq.matches?"dark":"light");
+  $("#themebtn").addEventListener("click",()=>{const c=root.getAttribute("data-theme")||(mq.matches?"dark":"light");setT(c==="dark"?"light":"dark");});
+  render();
+  (function(){
+    const note=document.getElementById("syncnote");
+    if(window.Track&&Track.syncEnabled&&Track.syncEnabled()){
+      if(note){note.textContent="Synced across your devices. Applied leads auto-clear 30 days after last activity (Won stays).";note.style.color="var(--prospect,var(--teal))";}
+      Track.sync(render);
+    }
+  })();
+</script>

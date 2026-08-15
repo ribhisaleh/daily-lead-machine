@@ -1,0 +1,16 @@
+OPTIONAL: SYNC YOUR SAVED LEADS ACROSS DEVICES (about 10 minutes, free)
+=======================================================================
+By default your saved/tracked leads live in one browser. This makes them
+appear on every device. Skip it unless you want that.
+
+1. Go to dash.cloudflare.com and sign up (free). Open "Workers & Pages".
+2. Storage & Databases > KV > Create. Name it exactly:  MYLEADS
+3. Workers & Pages > Create > Worker > give it a name > Deploy.
+4. Edit the worker, delete its sample code, and paste ALL of the code from
+   the file cloudflare-worker.js. Click Deploy.
+5. In the worker: Settings > Bindings > Add > KV namespace.
+   Variable name must be exactly:  MYLEADS   Select the MYLEADS namespace. Save.
+6. Copy the worker's web address (looks like https://xxxx.workers.dev).
+7. In your GitHub project: Settings > Secrets and variables > Actions >
+   the "Variables" tab > New variable >  SYNC_URL  = that web address.
+8. Run the workflow again. Your saved leads now sync across devices.

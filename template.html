@@ -1,0 +1,433 @@
+<style>
+  :root{
+    --ground:#EEF0EE; --surface:#FFFFFF; --surface-2:#F6F7F6;
+    --ink:#161B20; --muted:#5F6971; --hairline:#E0E3E1;
+    --accent:#0E8F8A; --accent-soft:#0e8f8a1a;
+    --prospect:#17915A; --prospect-soft:#17915a14;
+    --review:#B67A06; --review-soft:#b67a0614;
+    --rejected:#8A939B;
+    --shadow:0 1px 2px rgba(20,27,32,.06),0 8px 24px rgba(20,27,32,.05);
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Menlo","Consolas",monospace;
+    --sans:system-ui,-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#0E141B; --surface:#17202B; --surface-2:#1E2833;
+      --ink:#E7ECEF; --muted:#94A1AD; --hairline:#2A353F;
+      --accent:#34C6BE; --accent-soft:#34c6be1f;
+      --prospect:#3FCB86; --prospect-soft:#3fcb861f;
+      --review:#E7AE3A; --review-soft:#e7ae3a1c;
+      --rejected:#6C7883;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.28);
+    }
+  }
+  :root[data-theme="light"]{
+    --ground:#EEF0EE; --surface:#FFFFFF; --surface-2:#F6F7F6;
+    --ink:#161B20; --muted:#5F6971; --hairline:#E0E3E1;
+    --accent:#0E8F8A; --accent-soft:#0e8f8a1a;
+    --prospect:#17915A; --prospect-soft:#17915a14;
+    --review:#B67A06; --review-soft:#b67a0614;
+    --rejected:#8A939B;
+    --shadow:0 1px 2px rgba(20,27,32,.06),0 8px 24px rgba(20,27,32,.05);
+  }
+  :root[data-theme="dark"]{
+    --ground:#0E141B; --surface:#17202B; --surface-2:#1E2833;
+    --ink:#E7ECEF; --muted:#94A1AD; --hairline:#2A353F;
+    --accent:#34C6BE; --accent-soft:#34c6be1f;
+    --prospect:#3FCB86; --prospect-soft:#3fcb861f;
+    --review:#E7AE3A; --review-soft:#e7ae3a1c;
+    --rejected:#6C7883;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.28);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.5;-webkit-font-smoothing:antialiased;font-size:15px}
+  .wrap{max-width:1220px;margin:0 auto;padding:clamp(18px,4vw,44px) clamp(14px,3vw,32px) 64px}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+  /* Masthead */
+  .topnav{display:flex;gap:6px;margin-bottom:18px}
+  .topnav a{font-family:var(--mono);font-size:12.5px;padding:9px 15px;border-radius:999px;border:1px solid var(--hairline);color:var(--muted);background:var(--surface);text-decoration:none}
+  .topnav a.on{background:var(--accent-soft);color:var(--accent);border-color:transparent;font-weight:600}
+  .topnav a:hover{color:var(--ink);text-decoration:none}
+  .mast{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;
+    border-bottom:1px solid var(--hairline);padding-bottom:22px;margin-bottom:26px}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--accent);margin:0 0 10px}
+  h1{font-size:clamp(24px,4.2vw,38px);line-height:1.05;margin:0;font-weight:640;
+    letter-spacing:-.02em;text-wrap:balance}
+  .sub{color:var(--muted);margin:10px 0 0;font-size:14px;max-width:56ch}
+  .runmeta{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:12px;
+    display:flex;flex-wrap:wrap;gap:6px 16px}
+  .runmeta b{color:var(--ink);font-weight:600}
+  .themebtn{flex:none;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    background:var(--surface);color:var(--muted);border:1px solid var(--hairline);border-radius:999px;
+    padding:8px 14px;cursor:pointer;transition:color .15s,border-color .15s}
+  .themebtn:hover{color:var(--ink);border-color:var(--accent)}
+
+  /* Verdict banner */
+  .verdict{background:var(--surface);border:1px solid var(--hairline);border-left:3px solid var(--accent);
+    border-radius:12px;padding:16px 20px;margin-bottom:24px;box-shadow:var(--shadow);
+    display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
+  .verdict .k{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .verdict p{margin:0;font-size:15px}
+  .verdict strong{font-weight:640}
+
+  /* Stat tiles */
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:26px}
+  .tile{background:var(--surface);border:1px solid var(--hairline);border-radius:14px;padding:18px 18px 16px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .tile .lab{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .tile .num{font-family:var(--mono);font-size:clamp(30px,5vw,40px);font-weight:600;line-height:1;margin-top:12px;
+    font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .tile .foot{font-size:12px;color:var(--muted);margin-top:8px}
+  .tile.is-prospect{border-color:color-mix(in srgb,var(--prospect) 45%,var(--hairline))}
+  .tile.is-prospect .num{color:var(--prospect)}
+  .tile.is-prospect::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--prospect)}
+  .tile.is-review .num{color:var(--review)}
+  .tile.is-review::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--review)}
+  .tile.is-total .num{color:var(--ink)}
+
+  /* Breakdown panel */
+  .panels{display:grid;grid-template-columns:1.35fr 1fr;gap:14px;margin-bottom:30px}
+  .panel{background:var(--surface);border:1px solid var(--hairline);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow)}
+  .panel h2{font-size:13px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+    margin:0 0 16px;font-weight:600}
+  .bar-row{display:grid;grid-template-columns:132px 1fr 38px;align-items:center;gap:12px;margin-bottom:9px}
+  .bar-row .bl{font-family:var(--mono);font-size:12px;color:var(--ink)}
+  .bar-track{height:9px;background:var(--surface-2);border-radius:6px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:6px;background:var(--rejected);opacity:.85}
+  .bar-fill.geo{background:#C2603E}.bar-fill.spam{background:#7C8A97}
+  .bar-fill.agency{background:#4E7CB0}.bar-fill.role{background:#8E6FB0}
+  .bar-fill.nothiring{background:#9AA6AF}.bar-fill.supp{background:#C99A2E}
+  .bar-fill.ph{background:#B2503F}.bar-fill.big{background:#5AA0A0}.bar-fill.contact{background:#9AA6AF}
+  .bar-row .bn{font-family:var(--mono);font-size:12px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+  .rolechips{display:flex;flex-direction:column;gap:9px}
+  .rolechips .bar-row{grid-template-columns:118px 1fr 34px}
+  .rolechips .bar-fill{background:var(--accent);opacity:.75}
+
+  /* Controls */
+  .controls{display:flex;flex-wrap:wrap;gap:10px 12px;align-items:center;margin-bottom:16px;
+    position:sticky;top:0;z-index:5;background:var(--ground);padding:10px 0}
+  .pillset{display:inline-flex;background:var(--surface);border:1px solid var(--hairline);border-radius:999px;padding:3px}
+  .pill{font-family:var(--mono);font-size:12px;letter-spacing:.03em;border:0;background:transparent;color:var(--muted);
+    padding:7px 13px;border-radius:999px;cursor:pointer;white-space:nowrap;transition:color .15s,background .15s}
+  .pill[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+  .pill .c{opacity:.7;margin-left:5px}
+  .ctl{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--surface);border:1px solid var(--hairline);
+    border-radius:9px;padding:9px 12px}
+  input.ctl{min-width:180px;flex:1 1 200px}
+  input.ctl::placeholder{color:var(--muted)}
+  select.ctl{cursor:pointer}
+
+  /* Table */
+  .tablewrap{background:var(--surface);border:1px solid var(--hairline);border-radius:14px;box-shadow:var(--shadow);
+    overflow-x:auto}
+  table{border-collapse:collapse;width:100%;min-width:920px}
+  thead th{position:sticky;top:0;background:var(--surface-2);text-align:left;
+    font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);
+    font-weight:600;padding:12px 14px;border-bottom:1px solid var(--hairline);white-space:nowrap}
+  thead th.sortable{cursor:pointer;user-select:none}
+  thead th.sortable:hover{color:var(--ink)}
+  thead th .ar{opacity:.5;font-size:10px}
+  tbody td{padding:13px 14px;border-bottom:1px solid var(--hairline);vertical-align:top;font-size:13.5px}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr{transition:background .12s}
+  tbody tr:hover{background:var(--surface-2)}
+  tbody tr.r-prospect{background:var(--prospect-soft)}
+  tbody tr.r-review{background:var(--review-soft)}
+  td.c-date,td.c-fol{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+  td.c-handle{font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+  td.c-handle .loc{display:block;color:var(--muted);font-size:11px;margin-top:3px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  td.c-role{white-space:nowrap;font-size:12.5px}
+  td.c-country{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
+  td.c-snip{min-width:280px;max-width:420px;color:var(--ink)}
+  td.c-snip .hook{display:block;margin-top:7px;color:var(--review);font-style:italic;font-size:12.5px;
+    border-left:2px solid var(--review);padding-left:9px}
+  tr.r-prospect td.c-snip .hook{color:var(--prospect);border-color:var(--prospect)}
+  .status-cell{white-space:nowrap}
+  .status{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;letter-spacing:.04em;
+    text-transform:uppercase;font-weight:600;padding:4px 9px;border-radius:6px}
+  .status.prospect{color:var(--prospect);background:var(--prospect-soft)}
+  .status.review{color:var(--review);background:var(--review-soft)}
+  .status.rejected{color:var(--rejected);background:transparent;border:1px solid var(--hairline)}
+  .status .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+  .newbadge{display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;font-weight:700;
+    color:var(--accent);background:var(--accent-soft);border-radius:4px;padding:2px 5px;margin-left:6px;vertical-align:1px}
+  .reasons{display:flex;flex-wrap:wrap;gap:4px;max-width:200px}
+  .rz{font-family:var(--mono);font-size:10.5px;letter-spacing:.02em;color:var(--muted);
+    background:var(--surface-2);border:1px solid var(--hairline);border-radius:5px;padding:2px 6px;white-space:nowrap}
+  td.c-link a{font-family:var(--mono);font-size:14px}
+  .ptype{font-family:var(--mono);font-size:10.5px;color:var(--muted);display:block;margin-top:3px;text-transform:lowercase;letter-spacing:.02em}
+  .empty{padding:40px;text-align:center;color:var(--muted);font-family:var(--mono);font-size:13px}
+  .resultcount{font-family:var(--mono);font-size:12px;color:var(--muted);margin:0 0 10px}
+
+  footer{margin-top:34px;border-top:1px solid var(--hairline);padding-top:22px;color:var(--muted);font-size:13px}
+  footer h3{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);margin:0 0 10px}
+  footer ul{margin:0 0 16px;padding-left:18px}
+  footer li{margin:5px 0}
+  footer .road{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .srcchip{font-family:var(--mono);font-size:11px;padding:5px 10px;border-radius:999px;border:1px solid var(--hairline);color:var(--muted)}
+  .srcchip.live{color:var(--prospect);border-color:color-mix(in srgb,var(--prospect) 40%,var(--hairline))}
+  .srcchip.live::before{content:"● ";font-size:9px}
+  .srcchip.soon{opacity:.7}
+  .srcchip.soon::before{content:"○ ";font-size:9px}
+
+  @media (max-width:860px){
+    .tiles{grid-template-columns:repeat(2,1fr)}
+    .panels{grid-template-columns:1fr}
+    .mast{flex-direction:column}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <nav class="topnav">
+    <a href="index.html">🏠 All Leads</a>
+    <a href="onlinejobs.html">🎯 OnlineJobs Leads</a>
+    <a href="upwork.html">💼 Upwork Leads</a>
+    <a href="linkedin.html">🔗 LinkedIn Leads</a>
+    <a href="facebook.html">📘 Facebook Leads</a>
+    <a href="signal.html" class="on">📡 X Signal</a>
+    <a href="agency.html">🤝 Agency</a>
+    <a href="my_leads.html">⭐ My Leads</a>
+  </nav>
+  <header class="mast">
+    <div>
+      <p class="eyebrow">your business · Lead Lead Machine</p>
+      <h1>Marketing-role job posts, triaged for fit</h1>
+      <p class="sub">Every "we're hiring / looking for an agency" post for the services your business sells — pulled, deduped, and scored against the ICP. A hiring post is a buying signal; this board separates the few worth a look from the noise.</p>
+      <div class="runmeta">
+        <span>Scanned: <b>__WINDOW__</b></span>
+        <span>Source: <b>X / Twitter</b></span>
+        <span>Scanned: <b id="m-total">0</b></span>
+        <span>Updated: <b>__UPDATED__</b></span>
+      </div>
+    </div>
+    <button class="themebtn" id="themebtn" type="button" aria-label="Toggle color theme">Theme</button>
+  </header>
+
+  <div class="verdict">
+    <span class="k">Read</span>
+    <p id="verdict-text"></p>
+  </div>
+
+  <section class="tiles" aria-label="Funnel summary">
+    <div class="tile is-total"><div class="lab">Posts scanned</div><div class="num" id="t-total">0</div><div class="foot">last 24h · X</div></div>
+    <div class="tile is-prospect"><div class="lab">Prospects</div><div class="num" id="t-prospect">0</div><div class="foot">clean ICP fit</div></div>
+    <div class="tile is-review"><div class="lab">To review</div><div class="num" id="t-review">0</div><div class="foot">borderline · worth a look</div></div>
+    <div class="tile"><div class="lab">Rejected</div><div class="num" id="t-rejected">0</div><div class="foot">auto-filtered</div></div>
+  </section>
+
+  <section class="panels">
+    <div class="panel">
+      <h2>Why posts were cut</h2>
+      <div id="reasonBars"></div>
+    </div>
+    <div class="panel">
+      <h2>Roles seen</h2>
+      <div class="rolechips" id="roleBars"></div>
+    </div>
+  </section>
+
+  <div class="controls">
+    <div class="pillset" id="statusPills" role="group" aria-label="Filter by status">
+      <button class="pill" data-status="all" aria-pressed="true">All <span class="c" id="c-all">0</span></button>
+      <button class="pill" data-status="prospect" aria-pressed="false">Prospect <span class="c" id="c-prospect">0</span></button>
+      <button class="pill" data-status="review" aria-pressed="false">Review <span class="c" id="c-review">0</span></button>
+      <button class="pill" data-status="rejected" aria-pressed="false">Rejected <span class="c" id="c-rejected">0</span></button>
+    </div>
+    <select class="ctl" id="roleSel" aria-label="Filter by role"><option value="all">All roles</option></select>
+    <select class="ctl" id="countrySel" aria-label="Filter by country"><option value="all">All countries</option></select>
+    <input class="ctl" id="search" type="search" placeholder="Search handle, text, reason…" aria-label="Search posts">
+  </div>
+
+  <div class="exportbar" style="display:flex;justify-content:flex-end;margin:-2px 0 10px"><button id="exportBtn" type="button" title="Download the posts currently shown as an Excel (.xlsx) file" style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft,var(--surface-2));border:1px solid var(--hairline);border-radius:9px;padding:9px 14px;cursor:pointer">⬇ Export to Excel</button></div>
+  <p class="resultcount" id="resultCount"></p>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="sortable" data-sort="iso">Date <span class="ar" data-for="iso">▾</span></th>
+          <th>Status</th>
+          <th>Role</th>
+          <th>Account</th>
+          <th>Country</th>
+          <th class="sortable" data-sort="followers">Followers <span class="ar" data-for="followers"></span></th>
+          <th>Post</th>
+          <th>Flags</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <div class="empty" id="emptyMsg" style="display:none">No posts match these filters.</div>
+
+  <footer>
+    <h3>How this board is built</h3>
+    <ul>
+      <li><b>Signal:</b> public posts on X where a business is hiring for — or asking for an agency for — AI automation, voice AI, chatbots, or Gulf Arabic voice AI. The open role is the personalization hook.</li>
+      <li><b>Scoring is automated and heuristic.</b> Flags (off-geo, supplement-health, too-big, agency-competitor, role-not-sold, spam) come from your business's ICP and auto-reject rules. "Review" rows are borderline and need a human read before outreach. Nothing here has been contacted.</li>
+      <li><b>Known gap:</b> OnlineJobs.ph posts are readable but employer-anonymized (no company, country, or contact on the public page), so they can't be scored to a contactable lead and are excluded. Facebook / Instagram / Threads job posts are login-gated and not yet wired in.</li>
+    </ul>
+    <h3>Platform coverage</h3>
+    <div class="road">
+      <span class="srcchip live">X / Twitter — live</span>
+      <span class="srcchip soon">OnlineJobs.ph — anonymized, excluded</span>
+      <span class="srcchip soon">Facebook — pending access</span>
+      <span class="srcchip soon">Instagram — pending access</span>
+      <span class="srcchip soon">Threads — pending access</span>
+    </div>
+  </footer>
+</div>
+
+<script>
+  __EXPORT_JS__
+  const DATA = __DATA__;
+
+  const roleFillClass = {}; // reason class map
+  const REASON_CLASS = {"off-geo":"geo","spam":"spam","agency-competitor":"agency","role-not-sold":"role","not-hiring":"nothiring","supplement-health":"supp","ph-local":"ph","too-big":"big","no-contact":"contact"};
+  const REASON_LABEL = {"off-geo":"off-geography","spam":"spam / promo","agency-competitor":"agency / recruiter","role-not-sold":"role not sold","not-hiring":"not hiring","supplement-health":"supplement / health","ph-local":"PH-local","too-big":"above ceiling","no-contact":"no contact route"};
+
+  const $ = s => document.querySelector(s);
+  const esc = s => (s==null?"":String(s)).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+  // Summary numbers
+  const bs = DATA.counts.byStatus;
+  $("#t-total").textContent = DATA.totalPosts;
+  $("#m-total").textContent = DATA.totalPosts;
+  $("#t-prospect").textContent = bs.prospect||0;
+  $("#t-review").textContent = bs.review||0;
+  $("#t-rejected").textContent = bs.rejected||0;
+  $("#c-all").textContent = DATA.totalPosts;
+  $("#c-prospect").textContent = bs.prospect||0;
+  $("#c-review").textContent = bs.review||0;
+  $("#c-rejected").textContent = bs.rejected||0;
+
+  const pct = Math.round(100*(bs.rejected||0)/DATA.totalPosts);
+  $("#verdict-text").innerHTML = `<strong>${pct}% of this week's ${DATA.totalPosts} posts were auto-rejected.</strong> `+
+    `X skews to off-geography reposts, spam, agencies hiring their own staff, and roles you don't sell. `+
+    (bs.prospect? `<strong>${bs.prospect}</strong> clean prospect${bs.prospect>1?"s":""} and `:`<strong>Zero</strong> clean prospects surfaced — just `)+
+    `<strong>${bs.review}</strong> borderline post${bs.review!==1?"s":""} worth a human look (highlighted below).`+
+    (DATA.newToday!=null? ` <span style="color:var(--accent)">${DATA.newToday} new in the last 24h.</span>`:"");
+
+  // Reason bars
+  const rmax = Math.max(...Object.values(DATA.counts.byRejectReason));
+  $("#reasonBars").innerHTML = Object.entries(DATA.counts.byRejectReason)
+    .sort((a,b)=>b[1]-a[1]).map(([k,v])=>{
+      const cls = REASON_CLASS[k]||"";
+      return `<div class="bar-row"><span class="bl">${esc(REASON_LABEL[k]||k)}</span>`+
+        `<span class="bar-track"><span class="bar-fill ${cls}" style="width:${Math.round(100*v/rmax)}%"></span></span>`+
+        `<span class="bn">${v}</span></div>`;
+    }).join("");
+
+  // Role bars
+  const romax = Math.max(...Object.values(DATA.counts.byRole));
+  $("#roleBars").innerHTML = Object.entries(DATA.counts.byRole)
+    .sort((a,b)=>b[1]-a[1]).map(([k,v])=>
+      `<div class="bar-row"><span class="bl">${esc(k)}</span>`+
+      `<span class="bar-track"><span class="bar-fill" style="width:${Math.round(100*v/romax)}%"></span></span>`+
+      `<span class="bn">${v}</span></div>`).join("");
+
+  // Populate selects
+  const roleSel=$("#roleSel"), countrySel=$("#countrySel");
+  Object.keys(DATA.counts.byRole).sort().forEach(r=>{const o=document.createElement("option");o.value=r;o.textContent=r;roleSel.appendChild(o);});
+  Object.entries(DATA.counts.byCountryTop).forEach(([c])=>{const o=document.createElement("option");o.value=c;o.textContent=c;countrySel.appendChild(o);});
+
+  // State
+  let state={status:"all",role:"all",country:"all",q:"",sort:"iso",dir:-1};
+  const statusRank={prospect:0,review:1,rejected:2};
+
+  function filtered(){
+    let rows = DATA.posts.filter(p=>{
+      if(state.status!=="all" && p.status!==state.status) return false;
+      if(state.role!=="all" && p.role!==state.role) return false;
+      if(state.country!=="all" && p.country!==state.country) return false;
+      if(state.q){
+        const hay=(p.handle+" "+p.snippet+" "+p.hook+" "+(p.rejectReasons||[]).join(" ")+" "+p.location+" "+p.role).toLowerCase();
+        if(!hay.includes(state.q)) return false;
+      }
+      return true;
+    });
+    rows.sort((a,b)=>{
+      // prospect/review always float above rejected; chosen sort applies within each group
+      const sr=statusRank[a.status]-statusRank[b.status];
+      if(sr!==0) return sr;
+      if(state.sort==="followers"){
+        const fa=a.followers==null?-1:a.followers, fb=b.followers==null?-1:b.followers;
+        return state.dir*(fa-fb);
+      }
+      const cmp = a.iso<b.iso?-1:a.iso>b.iso?1:0;
+      return state.dir*cmp;
+    });
+    return rows;
+  }
+
+  function render(){
+    const rows=filtered();
+    $("#resultCount").textContent = `${rows.length} of ${DATA.totalPosts} posts`;
+    const tb=$("#rows");
+    if(!rows.length){tb.innerHTML="";$("#emptyMsg").style.display="block";return;}
+    $("#emptyMsg").style.display="none";
+    tb.innerHTML = rows.map(p=>{
+      const st=p.status;
+      const reasons=(p.rejectReasons||[]).map(r=>`<span class="rz">${esc(r)}</span>`).join("");
+      const hook = p.hook ? `<span class="hook">${esc(p.hook)}</span>` : "";
+      const loc = p.location ? `<span class="loc">${esc(p.location)}</span>` : "";
+      const newb = p.isNew ? `<span class="newbadge">NEW</span>` : "";
+      return `<tr class="r-${st}">`+
+        `<td class="c-date">${esc(p.date)}${newb}</td>`+
+        `<td class="status-cell"><span class="status ${st}"><span class="dot"></span>${st}</span></td>`+
+        `<td class="c-role">${esc(p.role)}</td>`+
+        `<td class="c-handle"><a href="${esc(p.url)}" target="_blank" rel="noopener">@${esc(p.handle)}</a>${loc}<span class="ptype">${esc(p.posterType)}</span></td>`+
+        `<td class="c-country">${esc(p.country)}</td>`+
+        `<td class="c-fol">${p.followers!=null?Number(p.followers).toLocaleString():"—"}</td>`+
+        `<td class="c-snip">${esc(p.snippet)}${hook}</td>`+
+        `<td><div class="reasons">${reasons||'<span class="rz" style="color:var(--prospect)">—</span>'}</div></td>`+
+        `<td class="c-link"><a href="${esc(p.url)}" target="_blank" rel="noopener" aria-label="Open post">↗</a></td>`+
+      `</tr>`;
+    }).join("");
+  }
+
+  // Events
+  $("#statusPills").addEventListener("click",e=>{
+    const b=e.target.closest(".pill"); if(!b) return;
+    state.status=b.dataset.status;
+    [...$("#statusPills").children].forEach(x=>x.setAttribute("aria-pressed", x===b));
+    render();
+  });
+  roleSel.addEventListener("change",()=>{state.role=roleSel.value;render();});
+  countrySel.addEventListener("change",()=>{state.country=countrySel.value;render();});
+  $("#search").addEventListener("input",e=>{state.q=e.target.value.trim().toLowerCase();render();});
+  document.querySelectorAll("th.sortable").forEach(th=>{
+    th.addEventListener("click",()=>{
+      const s=th.dataset.sort;
+      if(state.sort===s){state.dir*=-1;} else {state.sort=s;state.dir=(s==="followers"?-1:-1);}
+      document.querySelectorAll(".ar").forEach(a=>a.textContent="");
+      const ind=th.querySelector(".ar"); if(ind) ind.textContent = state.dir===-1?"▾":"▴";
+      render();
+    });
+  });
+
+  // Theme toggle
+  const root=document.documentElement;
+  const mq=window.matchMedia("(prefers-color-scheme:dark)");
+  function setTheme(t){root.setAttribute("data-theme",t);$("#themebtn").textContent = t==="dark"?"◐ Light":"◑ Dark";}
+  setTheme(mq.matches?"dark":"light");
+  $("#themebtn").addEventListener("click",()=>{
+    const cur=root.getAttribute("data-theme")||(mq.matches?"dark":"light");
+    setTheme(cur==="dark"?"light":"dark");
+  });
+
+  $("#exportBtn").addEventListener("click",()=>{
+    const rows=filtered().map(p=>[p.date||p.iso||"",p.status||"",p.role||"",("@"+(p.handle||"")),p.posterType||"",p.country||"",p.location||"",p.followers||0,p.snippet||"",p.hook||"",(p.rejectReasons||[]).join(", "),p.url||""]);
+    const stamp=new Date().toISOString().slice(0,10);
+    exportRowsToXlsx("x-signal-"+stamp+".xlsx",["Date","Status","Role","Handle","Poster type","Country","Location","Followers","Post","Fit note","Reject reasons","Link"],rows);
+  });
+
+  render();
+</script>
