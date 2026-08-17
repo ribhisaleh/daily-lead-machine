@@ -1,27 +1,76 @@
 {
-  "updated": "2026-08-16",
+  "updated": "2026-08-17",
   "leads": [
     {
       "source": "OnlineJobs.ph",
-      "jobTitle": "GoHighLevel - AI Automation - Web Design Specialist",
-      "company": "Property First Investments Pty Ltd",
+      "jobTitle": "GHL + SEO + N8N automation VA WANTED FULL TIME LONG TERM!! GROWTH WITH AN EXIT IN MIND",
+      "company": "Not listed",
       "email": "",
       "companyType": "Other",
-      "salary": "$8/hour",
+      "salary": "$400 to $800 Month paid weekly! Bonuses Higher than Salaryfor Performance",
+      "salaryUsd": 600,
+      "datePosted": "2026-08-18",
+      "datetime": "2026-08-18 07:12:09",
+      "link": "https://www.onlinejobs.ph/jobseekers/job/ghl-seo-n8n-automation-va-wanted-full-time-long-term-growth-with-an-exit-in-mind-1400619",
+      "score": 6,
+      "priority": "normal",
+      "industry": "",
+      "service": [
+        "Workflow Automation",
+        "AI Automation & Voice Agents"
+      ],
+      "country": "US",
+      "salesStage": "Lead Qualification",
+      "why": "",
+      "notes": "We’re a fast-growing U.S. Based Roofing and Construction company using AI Drone Technology to do inspections for customers to work insurance claims. Also using GO High Level, N8N, and other tech to build an entire automated suite to sell as",
+      "isNew": false
+    },
+    {
+      "source": "OnlineJobs.ph",
+      "jobTitle": "GoHighLevel + n8n Automation Specialist (Full Stack Workflow Builder)",
+      "company": "Not listed",
+      "email": "",
+      "companyType": "Other",
+      "salary": "800 or 900/month",
+      "salaryUsd": 850,
+      "datePosted": "2026-08-18",
+      "datetime": "2026-08-18 07:12:09",
+      "link": "https://www.onlinejobs.ph/jobseekers/job/gohighlevel-n8n-automation-specialist-full-stack-workflow-builder-1582161",
+      "score": 7,
+      "priority": "normal",
+      "industry": "",
+      "service": [
+        "Workflow Automation",
+        "AI Automation & Voice Agents"
+      ],
+      "country": "Unknown",
+      "salesStage": "Lead Qualification",
+      "why": "",
+      "notes": "We are building a fully integrated operational system inside GoHighLevel connected to n8n, and we are looking for a long-term Automation Specialist to own and implement workflows. This is NOT a basic VA position. This role is for someone wh",
+      "isNew": false
+    },
+    {
+      "source": "OnlineJobs.ph",
+      "jobTitle": "ClickUp + ServiceM8 + n8n Automation Build — Job Management System for Trades Business",
+      "company": "Not listed",
+      "email": "",
+      "companyType": "Other",
+      "salary": "$6-$10 / HOUR",
       "salaryUsd": 1280,
-      "datePosted": "2026-08-16",
-      "datetime": "2026-08-16 19:42:21",
-      "link": "https://www.onlinejobs.ph/jobseekers/job/gohighlevel-ai-automation-web-design-specialist-1710121",
+      "datePosted": "2026-08-17",
+      "datetime": "2026-08-17 15:32:56",
+      "link": "https://www.onlinejobs.ph/jobseekers/job/clickup-servicem8-n8n-automation-build-job-management-system-for-trades-business-1710514",
       "score": 8,
       "priority": "high",
       "industry": "",
       "service": [
+        "Workflow Automation",
         "AI Automation & Voice Agents"
       ],
-      "country": "Australia",
+      "country": "Unknown",
       "salesStage": "Lead Qualification",
       "why": "",
-      "notes": "Property Investments | CRM | Funnels | Automation | AI We are an Australian property referral specialist building a sophisticated digital client-acquisition and relationship-management system using GoHighLevel and AI. The strategy, client j",
+      "notes": "**ClickUp + ServiceM8 + n8n Automation Build — Job Management System for Trades Business** We're a tiling contracting company in New Zealand looking for an experienced n8n automation specialist to build an integration between ServiceM8 (job",
       "isNew": false
     }
   ]
