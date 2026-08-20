@@ -392,7 +392,7 @@ def _write_email_summary():
     grand_total = sum(totals.values())
     breakdown = ", ".join(f"{k}: {v}" for k, v in totals.items())
     print(f"SUMMARY: {grand_total} total leads today ({breakdown}).")
-        gh_env = os.environ.get("GITHUB_ENV")
+    gh_env = os.environ.get("GITHUB_ENV")
     if gh_env:
         with open(gh_env, "a", encoding="utf-8") as f:
             f.write("STATUS=ok\n")
@@ -400,36 +400,47 @@ def _write_email_summary():
             f.write(f"LEADS_BREAKDOWN={breakdown}\n")
 
 def build_myleads(today_iso):
-    """Static 'My Leads' page (my_leads.html). No server data: it renders entirely from the
-    visitor's own localStorage via tracker.js. We just fill the shared libs + the date."""
+    """Client-side "My Leads" tracker board (my_leads.html). Pure static shell — reads/writes
+    localStorage or the optional Cloudflare sync; nothing to scrape or fetch server-side."""
     if not os.path.exists(TEMPLATE_MYLEADS):
-        print("My Leads page skipped (my_leads.html missing).")
+        print("My Leads board skipped (my_leads.html missing).")
         return
     tpl = open(TEMPLATE_MYLEADS, encoding="utf-8").read()
-    html = (tpl.replace("__UPDATED__", _fmt(today_iso))
-               .replace("__EXPORT_JS__", EXPORT_JS).replace("__TRACK_JS__", TRACK_JS).replace("__SYNC_URL__", SYNC_URL).replace("__SYNC_TOKEN__", SYNC_TOKEN))
-    os.makedirs(OUT_DIR, exist_ok=True)
+    html = (tpl.replace("__EXPORT_JS__", EXPORT_JS).replace("__TRACK_JS__", TRACK_JS)
+               .replace("__SYNC_URL__", SYNC_URL).replace("__SYNC_TOKEN__", SYNC_TOKEN))
     open(OUT_MYLEADS, "w", encoding="utf-8").write(html)
-    print(f"Built {OUT_MYLEADS}: My Leads (client-side localStorage).")
+    print(f"Built {OUT_MYLEADS}: My Leads tracker.")
 
 def build_agency(today_iso):
-    """'Agency Fit' board (agency.html): the subset of leads that are small businesses hiring
-    directly, which you could take on as a retainer. Read-only over the per-source stores."""
+    """Agency-fit board (agency.html): small businesses hiring directly, no recruiter middleman,
+    pulled from every source's rolling store. Same optional decision-maker enrichment as before."""
     if not os.path.exists(TEMPLATE_AGENCY):
         print("Agency board skipped (template_agency.html missing).")
         return
     leads = []
-    for p in (OLJ_STORE, UPWORK_STORE, LINKEDIN_STORE, FB_STORE):
+    for path, source in ((OLJ_STORE, "OnlineJobs.ph"), (UPWORK_STORE, "Upwork"),
+                          (LINKEDIN_STORE, "LinkedIn"), (FB_STORE, "Facebook")):
         try:
-            leads += json.load(open(p)).get("leads", [])
+            for l in json.load(open(path)).get("leads", []):
+                if agency_fit(l):
+                    l.setdefault("source", source)
+                    leads.append(l)
         except Exception:
             pass
-    leads = [l for l in leads if agency_fit(l)]
-    leads.sort(key=lambda l: (-l.get("score", 0), l.get("datePosted", "")))
-    leads = _dedup(leads)
+    akey = os.environ.get("APOLLO_API_KEY", "").strip()
     pkey = os.environ.get("PROSPEO_API_KEY", "").strip()
-    if not pkey:
-        print("Agency: Prospeo enrichment OFF (PROSPEO_API_KEY not set / empty in this run).")
+    if akey:
+        try:
+            import apollo_enrich
+            n = apollo_enrich.enrich_leads(leads, akey)
+            msg = f"Agency: Apollo enriched {n} of {len(leads)} leads with a decision-maker."
+            if not n:
+                msg += f" 0 matched; last error: {apollo_enrich.last_error() or 'none (companies not found in Apollo)'}."
+            print(msg)
+        except Exception as e:
+            print(f"Agency: Apollo enrichment failed ({e}).")
+    elif not pkey:
+        print("Agency: enrichment OFF (neither APOLLO_API_KEY nor PROSPEO_API_KEY set in this run).")
     else:
         try:
             import prospeo_enrich
@@ -440,63 +451,14 @@ def build_agency(today_iso):
             print(msg)
         except Exception as e:
             print(f"Agency: Prospeo enrichment failed ({e}).")
-    tok = os.environ.get("ANTHROPIC_API_KEY", "").strip()
-    if tok:
-        try:
-            import draft_gen
-            n = draft_gen.attach_pitches(leads, tok)
-            if n:
-                print(f"Agency: auto-drafted {n} agency pitches.")
-        except Exception as e:
-            print(f"Agency: pitch auto-draft skipped ({e}).")
+    leads.sort(key=lambda l: -(l.get("score") or 0))
     data = {"leads": leads, "newToday": sum(1 for l in leads if l.get("isNew"))}
     tpl = open(TEMPLATE_AGENCY, encoding="utf-8").read()
     html = (tpl.replace("__DATA__", json.dumps(data, ensure_ascii=False))
                .replace("__UPDATED__", _fmt(today_iso)).replace("__EXPORT_JS__", EXPORT_JS)
                .replace("__TRACK_JS__", TRACK_JS).replace("__SYNC_URL__", SYNC_URL).replace("__SYNC_TOKEN__", SYNC_TOKEN))
-    os.makedirs(OUT_DIR, exist_ok=True)
     open(OUT_AGENCY, "w", encoding="utf-8").write(html)
     print(f"Built {OUT_AGENCY}: {len(leads)} agency-fit leads.")
-
-def build_all(today_iso):
-    """Consolidated 'All Leads' landing page (index.html): merges the lead stores from every
-    source into one ranked board. Read-only over the per-source stores; writes index.html."""
-    if not os.path.exists(TEMPLATE_ALL):
-        print("All-Leads board skipped (template_all.html missing).")
-        return
-    leads = []
-    for p in (OLJ_STORE, UPWORK_STORE, LINKEDIN_STORE, FB_STORE):
-        try:
-            leads += json.load(open(p)).get("leads", [])
-        except Exception:
-            pass
-    try:  # fold in X's actionable (prospect/review) posts as leads
-        for x in json.load(open(STORE)).get("posts", []):
-            if x.get("status") in ("prospect", "review"):
-                leads.append({
-                    "source": "X", "jobTitle": (x.get("snippet") or x.get("role") or "X hiring post")[:80],
-                    "company": ("@" + x.get("handle", "")) if x.get("handle") else "Not listed",
-                    "companyType": x.get("posterType", "") or "", "salary": "—", "salaryUsd": None,
-                    "datePosted": x.get("iso", ""), "link": x.get("url", ""),
-                    "score": 8 if x.get("status") == "prospect" else 6,
-                    "priority": "high" if x.get("status") == "prospect" else "normal",
-                    "service": [x.get("role", "")] if x.get("role") else [], "country": x.get("country", ""),
-                    "salesStage": "Lead Qualification", "why": x.get("hook", ""),
-                    "notes": x.get("snippet", ""), "isNew": x.get("isNew", False)})
-    except Exception:
-        pass
-    leads.sort(key=lambda l: (-l.get("score", 0), l.get("datePosted", "")))
-    leads = _dedup(leads)  # collapse the same job scraped from more than one source
-    data = {"leads": leads, "newToday": sum(1 for l in leads if l.get("isNew"))}
-    tpl = open(TEMPLATE_ALL, encoding="utf-8").read()
-    html = (tpl.replace("__DATA__", json.dumps(data, ensure_ascii=False))
-               .replace("__UPDATED__", _fmt(today_iso)).replace("__EXPORT_JS__", EXPORT_JS)
-               .replace("__TRACK_JS__", TRACK_JS).replace("__SYNC_URL__", SYNC_URL).replace("__SYNC_TOKEN__", SYNC_TOKEN))
-    open(OUT_ALL, "w", encoding="utf-8").write(html)
-    by = {}
-    for l in leads:
-        by[l["source"]] = by.get(l["source"], 0) + 1
-    print(f"Built {OUT_ALL}: {len(leads)} total leads across {by}.")
 
 def build_linkedin(token, today_iso):
     """LinkedIn job-leads board (linkedin.html). Same rolling 7-day pattern; searches remote
@@ -618,6 +580,9 @@ def build_olj(token, today_iso):
 def _fmt(iso):
     try: return datetime.strptime(iso, "%Y-%m-%d").strftime("%b %-d, %Y")
     except Exception: return iso
+
+if __name__ == "__main__":
+    main()
 
 if __name__ == "__main__":
     main()
