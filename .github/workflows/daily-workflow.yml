@@ -64,3 +64,19 @@ jobs:
 
       - id: deploy
         uses: actions/deploy-pages@v4
+      - name: Email me the daily summary
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          to: ${{ secrets.MAIL_USERNAME }}
+          from: Daily Lead Machine
+          subject: "🎯 ${{ env.TOTAL_LEADS }} new leads today"
+          body: |
+            Today's run: ${{ env.TOTAL_LEADS }} total leads.
+            Breakdown: ${{ env.LEADS_BREAKDOWN }}
+
+            Open your board: ${{ steps.deploy.outputs.page_url }}
