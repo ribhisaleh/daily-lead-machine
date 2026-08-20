@@ -393,9 +393,10 @@ def _write_email_summary():
     grand_total = sum(totals.values())
     breakdown = ", ".join(f"{k}: {v}" for k, v in totals.items())
     print(f"SUMMARY: {grand_total} total leads today ({breakdown}).")
-    gh_env = os.environ.get("GITHUB_ENV")
+        gh_env = os.environ.get("GITHUB_ENV")
     if gh_env:
         with open(gh_env, "a", encoding="utf-8") as f:
+            f.write("STATUS=ok\n")
             f.write(f"TOTAL_LEADS={grand_total}\n")
             f.write(f"LEADS_BREAKDOWN={breakdown}\n")
 
