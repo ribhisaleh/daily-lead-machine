@@ -363,6 +363,30 @@ def main():
     build_all(today_iso)
     build_myleads(today_iso)
     build_agency(today_iso)
+    _write_email_summary()
+
+def _write_email_summary():
+    """Tally today's totals across every board and expose them as GITHUB_ENV vars so the
+    'email me a summary' workflow step can put real numbers in the subject/body."""
+    totals = {}
+    for name, path in (("OnlineJobs", OLJ_STORE), ("Upwork", UPWORK_STORE),
+                        ("LinkedIn", LINKEDIN_STORE), ("Facebook", FB_STORE)):
+        try:
+            totals[name] = len(json.load(open(path)).get("leads", []))
+        except Exception:
+            totals[name] = 0
+    try:
+        totals["X"] = len(json.load(open(STORE)).get("posts", []))
+    except Exception:
+        totals["X"] = 0
+    grand_total = sum(totals.values())
+    breakdown = ", ".join(f"{k}: {v}" for k, v in totals.items())
+    print(f"SUMMARY: {grand_total} total leads today ({breakdown}).")
+    gh_env = os.environ.get("GITHUB_ENV")
+    if gh_env:
+        with open(gh_env, "a", encoding="utf-8") as f:
+            f.write(f"TOTAL_LEADS={grand_total}\n")
+            f.write(f"LEADS_BREAKDOWN={breakdown}\n")
 
 def build_myleads(today_iso):
     """Static 'My Leads' page (my_leads.html). No server data: it renders entirely from the
