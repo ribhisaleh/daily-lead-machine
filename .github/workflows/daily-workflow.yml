@@ -76,9 +76,8 @@ jobs:
           password: ${{ secrets.MAIL_PASSWORD }}
           to: ${{ secrets.MAIL_USERNAME }}
           from: Daily Lead Machine
-          subject: "🎯 ${{ env.TOTAL_LEADS }} new leads today"
+          subject: "${{ env.STATUS == 'failed' && '⚠️ Lead scrape failed — check Apify credit' || format('🎯 {0} new leads today', env.TOTAL_LEADS) }}"
           body: |
-            Today's run: ${{ env.TOTAL_LEADS }} total leads.
-            Breakdown: ${{ env.LEADS_BREAKDOWN }}
+            ${{ env.STATUS == 'failed' && env.ERROR_MSG || format('Today''s run: {0} total leads. Breakdown: {1}.', env.TOTAL_LEADS, env.LEADS_BREAKDOWN) }}
 
-            Open your board: ${{ steps.deploy.outputs.page_url }}
+            ${{ env.STATUS == 'failed' && 'Your board was left unchanged — last successful data is still live.' || format('Open your board: {0}', steps.deploy.outputs.page_url) }}
