@@ -319,10 +319,21 @@ def main():
     today_iso = now.date().isoformat()
     since = (now - timedelta(days=1)).date().isoformat()
 
-    try:
+        try:
         items = scrape(token, since)
     except Exception as e:
-        print(f"ERROR: Apify scrape failed ({e}). Keeping last good board.", file=sys.stderr)
+        err = str(e)
+        print(f"ERROR: Apify scrape failed ({err}). Keeping last good board.", file=sys.stderr)
+        if "403" in err or "Forbidden" in err:
+            friendly = ("Scrape failed: Apify rejected the request (HTTP 403), which almost always "
+                         "means your Apify usage credit is exhausted. Check your Apify billing page.")
+        else:
+            friendly = f"Scrape failed: {err}"
+        gh_env = os.environ.get("GITHUB_ENV")
+        if gh_env:
+            with open(gh_env, "a", encoding="utf-8") as f:
+                f.write("STATUS=failed\n")
+                f.write(f"ERROR_MSG={friendly}\n")
         sys.exit(1)
     print(f"Scraped {len(items)} raw items since {since}.")
 
