@@ -308,6 +308,7 @@ def recount(posts):
     country = dict(list(tally("country").items())[:12])
     return {"byStatus": by_status, "byRole": tally("role"),
             "byRejectReason": by_reason, "byCountryTop": country}
+
 def main():
     token = os.environ.get("APIFY_TOKEN", "").strip()
     if not token:
@@ -398,6 +399,46 @@ def _write_email_summary():
             f.write("STATUS=ok\n")
             f.write(f"TOTAL_LEADS={grand_total}\n")
             f.write(f"LEADS_BREAKDOWN={breakdown}\n")
+
+def build_all(today_iso):
+    """Consolidated 'All Leads' board (index.html, the landing page): merges every source's
+    rolling store (OnlineJobs, Upwork, LinkedIn, Facebook, X) into one deduped, sorted list."""
+    leads = []
+    for path, source in ((OLJ_STORE, "OnlineJobs.ph"), (UPWORK_STORE, "Upwork"),
+                          (LINKEDIN_STORE, "LinkedIn"), (FB_STORE, "Facebook")):
+        try:
+            for l in json.load(open(path)).get("leads", []):
+                l.setdefault("source", source)
+                leads.append(l)
+        except Exception:
+            pass
+    try:
+        for x in json.load(open(STORE)).get("posts", []):
+            if x.get("status") in ("prospect", "review"):
+                leads.append({
+                    "source": "X", "jobTitle": (x.get("snippet") or x.get("role") or "X hiring post")[:80],
+                    "company": ("@" + x.get("handle", "")) if x.get("handle") else "Not listed",
+                    "companyType": x.get("posterType", "") or "", "salary": "—", "salaryUsd": None,
+                    "datePosted": x.get("iso", ""), "link": x.get("url", ""),
+                    "score": 8 if x.get("status") == "prospect" else 6,
+                    "priority": "high" if x.get("status") == "prospect" else "normal",
+                    "service": [x.get("role", "")] if x.get("role") else [], "country": x.get("country", ""),
+                    "salesStage": "Lead Qualification", "why": x.get("hook", ""),
+                    "notes": x.get("snippet", ""), "isNew": x.get("isNew", False)})
+    except Exception:
+        pass
+    leads.sort(key=lambda l: (-l.get("score", 0), l.get("datePosted", "")))
+    leads = _dedup(leads)  # collapse the same job scraped from more than one source
+    data = {"leads": leads, "newToday": sum(1 for l in leads if l.get("isNew"))}
+    tpl = open(TEMPLATE_ALL, encoding="utf-8").read()
+    html = (tpl.replace("__DATA__", json.dumps(data, ensure_ascii=False))
+               .replace("__UPDATED__", _fmt(today_iso)).replace("__EXPORT_JS__", EXPORT_JS)
+               .replace("__TRACK_JS__", TRACK_JS).replace("__SYNC_URL__", SYNC_URL).replace("__SYNC_TOKEN__", SYNC_TOKEN))
+    open(OUT_ALL, "w", encoding="utf-8").write(html)
+    by = {}
+    for l in leads:
+        by[l["source"]] = by.get(l["source"], 0) + 1
+    print(f"Built {OUT_ALL}: {len(leads)} total leads across {by}.")
 
 def build_myleads(today_iso):
     """Client-side "My Leads" tracker board (my_leads.html). Pure static shell — reads/writes
@@ -582,7 +623,14 @@ def _fmt(iso):
     except Exception: return iso
 
 if __name__ == "__main__":
-    main()
-
-if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        msg = f"{type(e).__name__}: {e}".replace("\n", " ").replace("\r", " ")
+        print(f"ERROR: unhandled failure in main() ({msg}).", file=sys.stderr)
+        gh_env = os.environ.get("GITHUB_ENV")
+        if gh_env:
+            with open(gh_env, "a", encoding="utf-8") as f:
+                f.write("STATUS=failed\n")
+                f.write(f"ERROR_MSG=Scrape failed: {msg}\n")
+        sys.exit(1)
